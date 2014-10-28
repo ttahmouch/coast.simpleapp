@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coast Browser</title>
+</head>
+<body>
+<script src="http://127.0.0.1:8080/ua"></script>
+<script>
+    (function (window) {
+        window.onload = function () {
+            /**
+             * Note: Every Coast server has an HTTP Client and Hypermedia Client at GET /ua.
+             *       There is only one URL hard-coded within the entire application.
+             *       Links and forms are followed from responses.
+             */
+            var client = hypermedia.Api.enter('http://127.0.0.1:8080/notes', function (error, res) {
+                console.log(res && res.status === 200 ? res.body : 'failed');
+                client.can('createNote').do({ body: { title: 'Something cool.' } }, function (error, res) {
+                    console.log(res && res.status === 201 ? res.body : 'failed');
+                    client.can('getNotes').do(function (error, res) {
+                        console.log(res && res.status === 200 ? res.body : 'failed');
+                        client.can('getNote').do({ uri: { id: '0' } }, function (error, res) {
+                            console.log(res && res.status === 200 ? res.body : 'failed');
+                            client.can('deleteNote').do({ uri: { id: '0' } }, function (error, res) {
+                                console.log(res && res.status === 200 || res.status === 204);
+                                client.can('getNotes').do(function (error, res) {
+                                    console.log(res && res.status === 200 ? res.body : 'failed');
+                                    client.can('deleteNote').do({ uri: { id: '0' } }, function (error, res) {
+                                        console.log(res && res.status === 200 || res.status === 204);
+                                        client.can('getNotes').do(function (error, res) {
+                                            console.log(res && res.status === 200 ? res.body : 'failed');
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }, true);
+        };
+    })(window);
+</script>
+</body>
+</html>
